@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta - IP</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F0F2FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6C63FF;
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #999;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label {
+            top: -10px;
+            font-size: 10px;
+            color: #6C63FF;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
+        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
+
+        .info-box {
+            background: #F3F4FF;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: left;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .info-box p strong {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .open-map-link {
+            display: inline-block;
+            color: #6C63FF;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            background: transparent;
+            border: 2px solid #6C63FF;
+        }
+
+        .open-map-link:hover {
+            background: #6C63FF;
+            color: white;
+        }
+
+        .open-map-link::after {
+            content: '➜';
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .open-map-link:hover::after {
+            transform: translateX(2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Consulta - IP</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <input type="text" name="ip" placeholder=" " value="{{ ip_address }}" required>
+                <label for="ip">Digite o IP...</label>
+            </div>
+            {% if not is_admin %}
+                <div class="form-group">
+                    <input type="text" name="token" placeholder=" " required>
+                    <label for="token">Digite seu token...</label>
+                </div>
+            {% endif %}
+            <button type="submit" class="button">Consultar</button>
+        </form>
+        {% if results %}
+            <div class="info-box">
+                <p><strong>IP:</strong> {{ results.ip | default('Não disponível') }}</p>
+                <p><strong>Continente:</strong> {{ results.continent | default('Não disponível') }}</p>
+                <p><strong>País:</strong> {{ results.country | default('Não disponível') }}</p>
+                <p><strong>Região:</strong> {{ results.region | default('Não disponível') }}</p>
+                <p><strong>Cidade:</strong> {{ results.city | default('Não disponível') }}</p>
+                <p><strong>Latitude:</strong> {{ results.latitude | default('Não disponível') }}</p>
+                <p><strong>Longitude:</strong> {{ results.longitude | default('Não disponível') }}</p>
+                <p><strong>Provedor:</strong> {{ results.provider | default('Não disponível') }}</p>
+            </div>
+            <a href="https://www.google.com/maps?q={{ results.latitude }},{{ results.longitude }}" target="_blank" class="open-map-link">Abrir Mapa</a>
+        {% endif %}
+    </div>
+</body>
+</html>

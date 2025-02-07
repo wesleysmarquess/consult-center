@@ -1,0 +1,11 @@
+Flask
+pyjwt
+colorama
+requests
+datetime
+secrets
+json
+os
+re
+subprocess
+base64

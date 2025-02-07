@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard - Consult Center</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F7F7FB;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* User Panel */
+        .user-panel {
+            background: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .user-panel:hover {
+            transform: scale(1.05);
+        }
+
+        .user-panel .welcome-message {
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 15px;
+        }
+
+        .user-panel .welcome-message h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .user-panel .welcome-message p {
+            margin: 0;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .user-panel img {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .user-panel img:hover {
+            transform: scale(1.2);
+        }
+
+        .user-panel .notification-count {
+            position: absolute;
+            top: -3px;
+            right: -3px; /* Ajustado para não sobrepor o ícone */
+            background: #FF3B30;
+            color: white;
+            border-radius: 50%;
+            padding: 3px 6px;
+            font-size: 10px;
+            line-height: 1;
+            font-weight: bold;
+        }
+
+        /* User Card */
+        .user-card {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 250px;
+            padding: 20px;
+            z-index: 1002;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .user-card h2 {
+            font-size: 18px;
+            color: #333;
+            margin: 0 0 10px;
+        }
+
+        .user-card p {
+            font-size: 14px;
+            color: #777;
+            margin: 0 0 10px;
+        }
+
+        .user-card .close-card {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .user-card .close-card:hover {
+            transform: rotate(90deg);
+            color: #333;
+        }
+
+        .user-card .token-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(78, 84, 200, 0.1); /* Roxo transparente */
+            border-radius: 8px;
+            color: #4E54C8;
+            font-weight: bold;
+        }
+
+        /* Existing CSS for windows and pagination... */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 100px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            flex-grow: 1;
+            overflow-y: hidden;
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .window {
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: calc(50% - 10px);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #4E54C8;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .window:not(:last-child) {
+            margin-right: 20px;
+        }
+
+        .window:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .window img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 10px;
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .window h2 {
+            font-size: 16px;
+            margin: 5px 0 0;
+            color: #333;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .window p {
+            font-size: 12px;
+            margin: 5px 0 0;
+            color: #777;
+            font-weight: 400;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .bolinha-verde { background-color: #4CAF50; }
+        .bolinha-vermelha { background-color: #FF0000; }
+        .bolinha-amarela { background-color: #FFFF00; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pagination button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #4E54C8;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .pagination button:hover {
+            color: #333;
+            transform: scale(1.1);
+        }
+
+        .pagination button:disabled {
+            color: #ccc;
+            cursor: default;
+        }
+
+        /* Notifications */
+        .notification-window {
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            display: none;
+            z-index: 1002;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 250px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .notification-window h3 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .notification-window .notification-list {
+            padding-left: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notification-window .notification-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .notification-window .notification-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .notification-window .notification-dot {
+            width: 10px;
+            height: 10px;
+            background: #4E54C8;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .notification-window p {
+            font-size: 12px;
+            color: #777;
+            margin: 0;
+            flex-grow: 1;
+            word-wrap: break-word;
+        }
+
+        .notification-window .close-notification {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .notification-window .close-notification:hover {
+            color: #333;
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="user-panel">
+        <img src="https://cdn-icons-png.flaticon.com/512/6522/6522516.png" alt="Profile Icon">
+        <div class="welcome-message">
+            <h3>Bem-vindo(a), {{ g.user_id }}</h3>
+            <p>Validade: {{ users[g.user_id]['expiration'] if g.user_id in users else 'N/A' }}</p>
+        </div>
+        <div style="position: relative; margin-left: 15px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3119/3119338.png" alt="Notification Icon" onclick="openNotificationWindow()">
+            <span class="notification-count" id="notificationCount">{{ notifications.get(g.user_id, []).__len__() or 0 }}</span>
+        </div>
+        {% if admin %}
+            <button onclick="window.location.href='/admin'" style="background: none; border: none; color: #4A4A4A; font-size: 14px; cursor: pointer; margin-left: 15px;">Administração</button>
+        {% endif %}
+    </div>
+
+    <div class="user-card" id="userCard">
+        <button class="close-card" onclick="closeUserCard()">×</button>
+        <h2>{{ g.user_id }}</h2>
+        <p>Validade: {{ users[g.user_id]['expiration'] if g.user_id in users else 'N/A' }}</p>
+        <div class="token-info">
+            Token: {{ users[g.user_id]['token'] if g.user_id in users else 'N/A' }}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page active">
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/likes')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7801/7801791.png" alt="Icon 1">
+                    <h2>Adicionar Likes - FF</h2>
+                    <p>MANUTENÇÃO!!!</p>
+                    <div class="status-dot bolinha-vermelha"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/profile')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/65/65000.png" alt="Icon 2">
+                    <h2>Ver Perfil - FF</h2>
+                    <p>Veja o Perfil de Qualquer Player Com o ID!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/cpf')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5sgDN6tRmuqT63zQ64CsYQSD3Qgm5coz4xvNHq_zDXsYD3ZL5r5x4B-g&s=10" alt="Icon CPF">
+                    <h2>Consulta - CPF</h2>
+                    <p>Consulte Dados Através do CPF!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/nome')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5sgDN6tRmuqT63zQ64CsYQSD3Qgm5coz4xvNHq_zDXsYD3ZL5r5x4B-g&s=10" alt="Icon Nome">
+                    <h2>Consulta - NOME</h2>
+                    <p>Consulte Dados Através do NOME!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/tel')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgbnJ9_rIecCiij0MC7ePLL0Sadx_fXt602pH9CqPBbw&s" alt="Icon Telefone">
+                    <h2>Consulta - TELEFONE</h2>
+                    <p>Consulte Dados Através do TELEFONE!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/cpf2')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5sgDN6tRmuqT63zQ64CsYQSD3Qgm5coz4xvNHq_zDXsYD3ZL5r5x4B-g&s=10" alt="Icon CPF (DATAPRIME)">
+                    <h2>Consulta - CPF (DATAPRIME)</h2>
+                    <p>Consulte Dados Através Do CPF!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/nome2')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5sgDN6tRmuqT63zQ64CsYQSD3Qgm5coz4xvNHq_zDXsYD3ZL5r5x4B-g&s=10" alt="Icon Nome (DATAPRIME)">
+                    <h2>Consulta - NOME (DATAPRIME)</h2>
+                    <p>Consulte Dados Através Do NOME!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/pix')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_yHvuUWacoCS4Vsql2A6Ef39FIzb914XiTGhq9oEY_w&s" alt="Icon PIX">
+                    <h2>Consulta - PIX</h2>
+                    <p>Em Andamento...</p>
+                    <div class="status-dot bolinha-vermelha"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/placa')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScpoSaIUZGteQbF8jaXsdpRRHfIxjRg48WTx3oOURRqw&s" alt="Icon Placa">
+                    <h2>Consulta - PLACA</h2>
+                    <p>Consulte Dados Através da PLACA!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/ip')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUD5kBnwcR3chZy5As2-A5AYiSg8orG8H_s_Xwh78uXA&s" alt="Icon IP">
+                    <h2>Consulta - IP</h2>
+                    <p>Consulte a Localização Através do IP!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="window" onclick="navigateToModule('/cpf3')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5sgDN6tRmuqT63zQ64CsYQSD3Qgm5coz4xvNHq_zDXsYD3ZL5r5x4B-g&s=10" alt="Icon Telefone">
+                    <h2>Consulta - CPF (SISREGII)</h2>
+                    <p>Consulte Dados Através do CPF!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+                <div class="window" onclick="navigateToModule('/fotor')">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSA1JsqrCxMxb6mMYne1UnBZ74p412PHl22YP2Tvs1NGw&s" alt="Icon Foto RG">
+                    <h2>Consulta - FOTO RG</h2>
+                    <p>Consulte Dados da Foto RG!</p>
+                    <div class="status-dot bolinha-verde"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination">
+            <button onclick="changePage(-1)" id="prevPage">‹</button>
+            <button onclick="changePage(1)" id="nextPage">›</button>
+        </div>
+    </div>
+
+    <div id="notificationWindow" class="notification-window">
+        <button class="close-notification" onclick="closeNotificationWindow()">×</button>
+        <h3>Notificações</h3>
+        <div class="notification-list">
+            {% if g.user_id in notifications %}
+                {% for notification in notifications[g.user_id] %}
+                    <div class="notification-item">
+                        <span class="notification-dot"></span>
+                        <p>{{ notification.message }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Nenhuma notificação</p>
+            {% endif %}
+        </div>
+    </div>
+     <script>
+         let currentPage = 0;
+         const pages = document.querySelectorAll('.page');
+         const totalPages = pages.length;
+
+         function navigateToModule(url) {
+             window.location.href = url;
+         }
+
+         function openNotificationWindow() {
+             document.getElementById('notificationWindow').style.display = 'block';
+             document.getElementById('notificationCount').textContent = '0'; // Reset counter when window is opened
+         }
+
+         function closeNotificationWindow() {
+             document.getElementById('notificationWindow').style.display = 'none';
+         }
+
+         function toggleUserCard() {
+             const card = document.getElementById('userCard');
+             card.style.display = card.style.display === 'block' ? 'none' : 'block';
+         }
+
+         function closeUserCard() {
+             document.getElementById('userCard').style.display = 'none';
+         }
+
+         function changePage(direction) {
+             let newPage = currentPage + direction;
+
+             if (newPage >= 0 && newPage < totalPages) {
+                 pages[currentPage].classList.remove('active');
+                 pages[newPage].classList.add('active');
+                 currentPage = newPage;
+
+                 document.getElementById('prevPage').disabled = currentPage === 0;
+                 document.getElementById('nextPage').disabled = currentPage === totalPages - 1;
+             }
+         }
+
+         // Initialize button states
+         document.getElementById('prevPage').disabled = true;
+         document.getElementById('nextPage').disabled = currentPage === totalPages - 1;
+     </script>
