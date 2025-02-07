@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta - Foto RG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F0F2FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 450px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6C63FF;
+            transform: scale(1.01);
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease-in;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
+        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
+
+        .hidden {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .profile-info {
+            background: #F3F4FF;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: left;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .profile-info p strong {
+            display: inline-block;
+            width: 120px;
+        }
+
+        .image-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .download-button {
+            display: inline-block;
+            color: #6C63FF;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            background: transparent;
+            border: 2px solid #6C63FF;
+        }
+
+        .download-button:hover {
+            background: #6C63FF;
+            color: white;
+        }
+
+        .download-button::after {
+            content: '➜';
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .download-button:hover::after {
+            transform: translateX(2px);
+        }
+
+        .not-found {
+            color: #6C63FF;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Consulta - Foto RG</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <select name="estado" id="estado" onchange="toggleFields()">
+                    <option value="">Selecione o Estado</option>
+                    <option value="fotoba">FOTO - BAHIA</option>
+                    <option value="fotorj">FOTO - RJ</option>
+                </select>
+            </div>
+            <div id="documentInput" class="form-group hidden">
+                <input type="text" name="documento" placeholder="Digite o CPF..." value="{{ documento }}" required>
+            </div>
+            {% if not is_admin %}
+                <div id="tokenInput" class="form-group hidden">
+                    <input type="text" name="token" placeholder="Digite seu token..." required>
+                </div>
+            {% endif %}
+            <button type="submit" class="button" id="submitButton" disabled>Consultar</button>
+        </form>
+        {% if results %}
+            <div class="image-container">
+                {% if results.foto %}
+                    <img src="data:image/png;base64,{{ results.foto }}" alt="Foto RG">
+                    <button class="download-button" onclick="downloadImage()">
+                        Baixar
+                    </button>
+                {% else %}
+                    <p class="not-found">Não encontrado...</p>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <p><strong>Nome:</strong> {{ results.nome | default('Não disponível') }}</p>
+                <p><strong>CPF:</strong> {{ results.cpf | default('Não disponível') }}</p>
+                <p><strong>RG:</strong> {{ results.rg | default('Não disponível') }}</p>
+                <p><strong>Estado Civil:</strong> {{ results.estadoCivil | default('Não disponível') }}</p>
+                <p><strong>Sexo:</strong> {{ results.sexo | default('Não disponível') }}</p>
+                <p><strong>Data de Nascimento:</strong> {{ results.nascimento | default('Não disponível') }}</p>
+                <p><strong>Ocupação:</strong> {{ results.ocupacao | default('Não disponível') }}</p>
+                <p><strong>Escolaridade:</strong> {{ results.escolaridade | default('Não disponível') }}</p>
+                <p><strong>Telefone:</strong> {{ results.telefone | default('Não disponível') }}</p>
+                <p><strong>Endereço:</strong> {{ results.endereco | default('Não disponível') }}</p>
+                <p><strong>Bairro:</strong> {{ results.bairro | default('Não disponível') }}</p>
+                <p><strong>Cidade:</strong> {{ results.cidade | default('Não disponível') }}</p>
+                <p><strong>Estado:</strong> {{ results.estado | default('Não disponível') }}</p>
+                <p><strong>País:</strong> {{ results.pais | default('Não disponível') }}</p>
+                <p><strong>Número:</strong> {{ results.numero | default('Não disponível') }}</p>
+                <p><strong>CEP:</strong> {{ results.cep | default('Não disponível') }}</p>
+                <p><strong>Altura:</strong> {{ results.altura | default('Não disponível') }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleFields() {
+            const estado = document.getElementById('estado').value;
+            const documentInput = document.getElementById('documentInput');
+            const tokenInput = document.getElementById('tokenInput');
+            const submitButton = document.getElementById('submitButton');
+
+            if (estado) {
+                documentInput.classList.remove('hidden');
+                documentInput.classList.add('visible');
+                if (tokenInput) {
+                    tokenInput.classList.remove('hidden');
+                    tokenInput.classList.add('visible');
+                }
+                submitButton.disabled = false;
+            } else {
+                documentInput.classList.remove('visible');
+                documentInput.classList.add('hidden');
+                if (tokenInput) {
+                    tokenInput.classList.remove('visible');
+                    tokenInput.classList.add('hidden');
+                }
+                submitButton.disabled = true;
+            }
+        }
+
+        document.getElementById('estado').addEventListener('change', toggleFields);
+
+        function generateRandomString(length = 32) {
+            const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function downloadImage() {
+            const img = document.querySelector('.image-container img');
+            if (img) {
+                const link = document.createElement('a');
+                link.href = img.src;
+                link.download = generateRandomString() + '.png';
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>

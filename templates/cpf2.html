@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta - CPF2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #E6E6FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.05);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid #ccc;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6C63FF;
+            transform: scale(1.01);
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #6C63FF, #4E54C8);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease-in;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .alert-success { background-color: #E3FCEF; color: #155724; border-left: 5px solid #155724; }
+        .alert-error { background-color: #FFEBEE; color: #721C24; border-left: 5px solid #721C24; }
+
+        .profile-info {
+            background: #F3F4FF;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: left;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .profile-info p strong {
+            display: inline-block;
+            width: 150px;
+        }
+
+        .list-item {
+            background: #F7F7F7;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Consulta - CPF</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <input type="text" name="cpf" placeholder="Digite o CPF..." value="{{ cpf }}" required>
+            </div>
+            {% if not is_admin %}
+                <div class="form-group">
+                    <input type="text" name="token" placeholder="Digite seu token..." required>
+                </div>
+            {% endif %}
+            <button type="submit" class="button">Consultar</button>
+        </form>
+        {% if result %}
+        <div class="profile-info">
+            <h3>Dados Básicos:</h3>
+            <p><strong>Nome:</strong> {{ result.resultado.DadosBasicos.nome | default('Não informado') }}</p>
+            <p><strong>CPF:</strong> {{ result.resultado.DadosBasicos.cpf | default('Não informado') }}</p>
+            <p><strong>Data de Nascimento:</strong> {{ result.resultado.DadosBasicos.dataNascimento | replace('/', '-') | default('Não informado') }}</p>
+            <p><strong>Sexo:</strong> {{ result.resultado.DadosBasicos.sexo | replace('M - ', '') | default('Não informado') }}</p>
+            <p><strong>Nome da Mãe:</strong> {{ result.resultado.DadosBasicos.nomeMae | default('Não informado') }}</p>
+            <p><strong>Nome do Pai:</strong> {{ result.resultado.DadosBasicos.nomePai | default('Não informado') }}</p>
+            <p><strong>Escolaridade:</strong> {{ result.resultado.DadosBasicos.escolaridade | default('Não informado') }}</p>
+            <p><strong>Estado Civil:</strong> {{ result.resultado.DadosBasicos.estadoCivil | default('Não informado') }}</p>
+            <p><strong>Óbito:</strong> {{ result.resultado.DadosBasicos.obito.obito }} {% if result.resultado.DadosBasicos.obito.dataObito != "Não consta." %} - Data: {{ result.resultado.DadosBasicos.obito.dataObito }} {% endif %}</p>
+            <p><strong>Situação Cadastral:</strong> {{ result.resultado.DadosBasicos.situacaoCadastral.descricaoSituacaoCadastral }} - {{ result.resultado.DadosBasicos.situacaoCadastral.dataSituacaoCadastral }}</p>
+
+            <h3>Dados Econômicos:</h3>
+            <p><strong>Renda:</strong> R$ {{ result.resultado.DadosEconomicos.renda | default('Não informado') }}</p>
+            <p><strong>Poder Aquisitivo:</strong> {{ result.resultado.DadosEconomicos.poderAquisitivo.poderAquisitivoDescricao }} ({{ result.resultado.DadosEconomicos.poderAquisitivo.faixaPoderAquisitivo }})</p>
+            <p><strong>Score CSBA:</strong> {{ result.resultado.DadosEconomicos.score.scoreCSBA }} ({{ result.resultado.DadosEconomicos.score.scoreCSBAFaixaRisco }})</p>
+            <p><strong>Serasa Mosaic:</strong> {{ result.resultado.DadosEconomicos.serasaMosaic.descricaoMosaicNovo }} ({{ result.resultado.DadosEconomicos.serasaMosaic.classeMosaicNovo }})</p>
+
+            <h3>Profissão:</h3>
+            <div class="list-item">
+                <p><strong>CBO:</strong> {{ result.resultado.profissao.cbo | default('Não informado') }}</p>
+                <p><strong>Descrição:</strong> {{ result.resultado.profissao.cboDescricao | default('Não informado') }}</p>
+                <p><strong>PIS:</strong> {{ result.resultado.profissao.pis | default('Não informado') }}</p>
+            </div>
+
+            <h3>Empregos:</h3>
+            {% for emprego in result.resultado.empregos %}
+            <div class="list-item">
+                <p><strong>CBO:</strong> {{ emprego.cbo }}</p>
+                <p><strong>Descrição:</strong> {{ emprego.cboDescricao }}</p>
+                <p><strong>Renda:</strong> R$ {{ emprego.renda }}</p>
+                <p><strong>Data de Admissão:</strong> {{ emprego.dataAdmissao | replace('/', '-') }}</p>
+                <p><strong>CNPJ do Empregador:</strong> {{ emprego.cnpjEmpregador }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Empresas:</h3>
+            {% for empresa in result.resultado.empresas %}
+            <div class="list-item">
+                <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+                <p><strong>Tipo de Relação:</strong> {{ empresa.tipoRelacao }}</p>
+                <p><strong>Admissão:</strong> {{ empresa.admissao | replace('/', '-') }}</p>
+                <p><strong>Demissão:</strong> {{ empresa.demissao | replace('/', '-') }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Endereços:</h3>
+            {% for endereco in result.resultado.enderecos %}
+            <div class="list-item">
+                <p><strong>Tipo Logradouro:</strong> {{ endereco.tipoLogradouro | default('Não informado') }}</p>
+                <p><strong>Logradouro:</strong> {{ endereco.logradouro | default('Não informado') }}</p>
+                <p><strong>Número:</strong> {{ endereco.logradouroNumero | default('Não informado') }}</p>
+                <p><strong>Bairro:</strong> {{ endereco.bairro | default('Não informado') }}</p>
+                <p><strong>Cidade:</strong> {{ endereco.cidade | default('Não informado') }}</p>
+                <p><strong>UF:</strong> {{ endereco.uf | default('Não informado') }}</p>
+                <p><strong>CEP:</strong> {{ endereco.cep | default('Não informado') }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Telefones:</h3>
+            {% for telefone in result.resultado.telefones %}
+            <div class="list-item">
+                <p><strong>Telefone:</strong> {{ telefone.telefone }}</p>
+                <p><strong>Tipo:</strong> {{ telefone.tipo | default('Não informado') }}</p>
+                <p><strong>Operadora:</strong> {{ telefone.operadora | default('Não informado') }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>E-mails:</h3>
+            {% for email in result.resultado.emails %}
+            <div class="list-item">
+                <p><strong>E-mail:</strong> {{ email.email }}</p>
+                <p><strong>Prioridade:</strong> {{ email.prioridade }}</p>
+                <p><strong>Qualidade:</strong> {{ email.qualidade }}</p>
+                <p><strong>Pessoal:</strong> {{ email.emailPessoal }}</p>
+                <p><strong>Blacklist:</strong> {{ email.blacklist }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Parentes:</h3>
+            {% for parente in result.resultado.parentes %}
+            <div class="list-item">
+                <p><strong>Nome do Parente:</strong> {{ parente.nomeParente }}</p>
+                <p><strong>Grau de Parentesco:</strong> {{ parente.grauParentesco }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Dados de Imposto:</h3>
+            {% for imposto in result.resultado.DadosImposto %}
+            <div class="list-item">
+                <p><strong>Ano:</strong> {{ imposto.ano }}</p>
+                <p><strong>Status:</strong> {{ imposto.status }}</p>
+            </div>
+            {% endfor %}
+
+            <h3>Benefícios:</h3>
+            {% for beneficio in result.resultado.beneficios %}
+            <div class="list-item">
+                <p><strong>Tipo:</strong> {{ beneficio.beneficio }}</p>
+                <p><strong>Total Recebido:</strong> {{ beneficio.totalRecebido }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
