@@ -1,5 +1,4 @@
 Flask
-pyjwt
 colorama
 requests
 datetime
